@@ -1,39 +1,46 @@
+mod io_utils;
 use std::collections::HashMap;
-use std::io;
 
-fn main() {
+fn solve(lines: Vec<String>) -> i32 {
+    let numbers_it = lines
+        .iter()
+        .map(|line| line.split_once("   ").unwrap())
+        .map(|(n1, n2)| (n1.parse().unwrap(), n2.parse().unwrap()));
+
     let mut col1: Vec<i32> = Vec::new();
     let mut col2: HashMap<i32, i32> = HashMap::new();
-    loop {
-        let mut numbers = String::new();
-        let res = io::stdin().read_line(&mut numbers);
-        match res {
-            Err(_) | Ok(0) => break,
-            Ok(_) => {
-                let (str1, str2) = numbers.split_once("   ").unwrap();
-                let str2 = str2.strip_suffix("\n").unwrap();
-                let int1: i32 = str1.parse().unwrap();
-                let int2: i32 = str2.parse().unwrap();
-                col1.push(int1);
 
-                let v = col2.get(&int2);
+    for (n1, n2) in numbers_it {
+        col1.push(n1);
+        let v = col2.get(&n2);
 
-                match v {
-                    Some(freq) => col2.insert(int2, freq + 1),
-                    None => col2.insert(int2, 1),
-                };
-            }
-        }
-    }
-
-    let mut result = 0;
-
-    for v1 in col1 {
-        let freq = col2.get(&v1);
-        result += match freq {
-            Some(f) => v1 * f,
-            None => 0,
+        match v {
+            Some(freq) => col2.insert(n2, freq + 1),
+            None => col2.insert(n2, 1),
         };
     }
-    println!("{result}");
+
+    col1.iter()
+        .map(|n1| (n1, col2.get(&n1)))
+        .filter(|(_, freq)| freq.is_some())
+        .map(|(&n1, freq)| n1 * freq.unwrap())
+        .sum()
+}
+
+fn main() {
+    let lines = io_utils::read_stdin();
+    let solution = solve(lines);
+    println!("{solution}");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn solution_correct() {
+        let result = solve(io_utils::read_file("inputs/1.in"));
+        let solution = 27384707;
+        assert_eq!(result, solution);
+    }
 }
