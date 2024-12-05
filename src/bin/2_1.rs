@@ -1,6 +1,6 @@
 use std::io;
 
-fn report_safe(report: String) -> bool {
+fn report_safe(report: &String) -> bool {
     let report_numbers: Vec<i32> = report
         .split(" ")
         .map(|s| s.parse::<i32>().unwrap())
@@ -12,13 +12,11 @@ fn report_safe(report: String) -> bool {
 }
 
 fn main() {
-    let safe: i32 = io::stdin()
+    let safe = io::stdin()
         .lines()
-        .filter(|l| l.is_ok())
-        .map(|x| x.unwrap())
-        .map(report_safe)
-        .map(|b| if b { 1 } else { 0 })
-        .sum();
+        .filter_map(Result::ok)
+        .filter(report_safe)
+        .count();
 
     println!("{safe}");
 }
