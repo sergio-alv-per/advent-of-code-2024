@@ -18,7 +18,7 @@ mod tests {
     #[ignore] // REMOVE ON PROBLEM FILES
     #[test]
     fn solution_correct() {
-        let result = solve(io_utils::read_file("inputs/..."));
+        let result = solve(io_utils::read_file("inputs/input_file.in"));
         let solution = 0;
         assert_eq!(result, solution);
     }
