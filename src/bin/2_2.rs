@@ -1,4 +1,4 @@
-use std::io;
+mod io_utils;
 
 fn differences_safe(differences: &Vec<i32>) -> bool {
     differences.iter().all(|&x| x > 0 && x <= 3) || differences.iter().all(|&x| x < 0 && x >= -3)
@@ -8,7 +8,7 @@ fn exclude_i(vs: &Vec<i32>, i: usize) -> Vec<i32> {
     [&vs[..i], &vs[i + 1..]].concat()
 }
 
-fn report_safe(report: String) -> bool {
+fn report_safe(report: &String) -> bool {
     let report_numbers: Vec<i32> = report
         .split(" ")
         .map(|s| s.parse::<i32>().unwrap())
@@ -24,14 +24,24 @@ fn report_safe(report: String) -> bool {
             .any(|x| x)
 }
 
-fn main() {
-    let safe: i32 = io::stdin()
-        .lines()
-        .filter(|l| l.is_ok())
-        .map(|x| x.unwrap())
-        .map(report_safe)
-        .map(|b| if b { 1 } else { 0 })
-        .sum();
+fn solve(lines: Vec<String>) -> i32 {
+    lines.iter().filter(|&s| report_safe(s)).count() as i32
+}
 
-    println!("{safe}");
+fn main() {
+    let lines = io_utils::read_stdin();
+    let solution = solve(lines);
+    println!("{solution}");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn solution_correct() {
+        let result = solve(io_utils::read_file("inputs/2.in"));
+        let solution = 455;
+        assert_eq!(result, solution);
+    }
 }

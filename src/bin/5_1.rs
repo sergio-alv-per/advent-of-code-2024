@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::io;
 
 fn build_rules(rules_lines: &[String]) -> HashMap<i32, Vec<i32>> {
     let mut rules: HashMap<i32, Vec<i32>> = HashMap::new();
@@ -45,9 +44,9 @@ fn check_report(report: &String, rules: &HashMap<i32, Vec<i32>>) -> Option<i32> 
     Some(report[middle_page_index])
 }
 
-fn main() {
-    let lines: Vec<String> = io::stdin().lines().filter_map(Result::ok).collect();
+mod io_utils;
 
+fn solve(lines: Vec<String>) -> i32 {
     let index_of_break = lines.iter().position(|s| s.is_empty()).unwrap();
 
     let rules_lines = &lines[0..index_of_break];
@@ -55,11 +54,27 @@ fn main() {
 
     let rules = build_rules(rules_lines);
 
-    let sum_good_reports: i32 = reports_lines
+    reports_lines
         .iter()
         .filter_map(|r| check_report(r, &rules))
         .inspect(|n| println!("{n}"))
-        .sum();
+        .sum()
+}
 
-    println!("{sum_good_reports}");
+fn main() {
+    let lines = io_utils::read_stdin();
+    let solution = solve(lines);
+    println!("{solution}");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn solution_correct() {
+        let result = solve(io_utils::read_file("inputs/5.in"));
+        let solution = 4996;
+        assert_eq!(result, solution);
+    }
 }

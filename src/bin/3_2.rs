@@ -1,5 +1,5 @@
 use regex::Regex;
-use std::io;
+mod io_utils;
 
 enum Capture {
     Do,
@@ -38,9 +38,24 @@ fn parse_enabled_muls(full_input: String) -> i32 {
     result
 }
 
-fn main() {
-    let full_input: String = io::stdin().lines().filter_map(|l| l.ok()).collect();
-    let mul_sum = parse_enabled_muls(full_input);
+fn solve(lines: Vec<String>) -> i32 {
+    parse_enabled_muls(lines.concat())
+}
 
-    println!("{mul_sum}");
+fn main() {
+    let lines = io_utils::read_stdin();
+    let solution = solve(lines);
+    println!("{solution}");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn solution_correct() {
+        let result = solve(io_utils::read_file("inputs/3.in"));
+        let solution = 90044227;
+        assert_eq!(result, solution);
+    }
 }

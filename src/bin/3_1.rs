@@ -1,7 +1,7 @@
 use regex::Regex;
-use std::io;
+mod io_utils;
 
-fn parse_muls_in_line(line: String) -> i32 {
+fn parse_muls_in_line(line: &String) -> i32 {
     let re = Regex::new(r"mul\((\d{1,3}),(\d{1,3})\)").unwrap();
 
     let captures = re.captures_iter(&line).map(|c| c.extract());
@@ -13,12 +13,24 @@ fn parse_muls_in_line(line: String) -> i32 {
         .sum()
 }
 
-fn main() {
-    let mul_sum: i32 = io::stdin()
-        .lines()
-        .filter_map(|l| l.ok())
-        .map(parse_muls_in_line)
-        .sum();
+fn solve(lines: Vec<String>) -> i32 {
+    lines.iter().map(parse_muls_in_line).sum()
+}
 
-    println!("{mul_sum}");
+fn main() {
+    let lines = io_utils::read_stdin();
+    let solution = solve(lines);
+    println!("{solution}");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn solution_correct() {
+        let result = solve(io_utils::read_file("inputs/3.in"));
+        let solution = 184511516;
+        assert_eq!(result, solution);
+    }
 }

@@ -1,4 +1,4 @@
-use std::io;
+mod io_utils;
 
 fn find_xmases(char_matrix: Vec<Vec<char>>) -> i32 {
     let valid_xmases = [
@@ -27,14 +27,26 @@ fn find_xmases(char_matrix: Vec<Vec<char>>) -> i32 {
     found
 }
 
+#[allow(unused_variables)]
+fn solve(lines: Vec<String>) -> i32 {
+    let char_matrix: Vec<Vec<char>> = lines.iter().map(|s| s.chars().collect()).collect();
+    find_xmases(char_matrix.clone())
+}
+
 fn main() {
-    let char_matrix: Vec<Vec<char>> = io::stdin()
-        .lines()
-        .filter_map(|l| l.ok())
-        .map(|s| s.chars().collect())
-        .collect();
+    let lines = io_utils::read_stdin();
+    let solution = solve(lines);
+    println!("{solution}");
+}
 
-    let xmases = find_xmases(char_matrix.clone());
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    println!("{xmases}");
+    #[test]
+    fn solution_correct() {
+        let result = solve(io_utils::read_file("inputs/4.in"));
+        let solution = 1864;
+        assert_eq!(result, solution);
+    }
 }

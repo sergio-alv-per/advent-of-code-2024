@@ -1,4 +1,4 @@
-use std::io;
+mod io_utils;
 
 fn report_safe(report: &String) -> bool {
     let report_numbers: Vec<i32> = report
@@ -11,12 +11,24 @@ fn report_safe(report: &String) -> bool {
     differences.iter().all(|&x| x > 0 && x <= 3) || differences.iter().all(|&x| x < 0 && x >= -3)
 }
 
-fn main() {
-    let safe = io::stdin()
-        .lines()
-        .filter_map(Result::ok)
-        .filter(report_safe)
-        .count();
+fn solve(lines: Vec<String>) -> i32 {
+    lines.iter().filter(|&s| report_safe(s)).count() as i32
+}
 
-    println!("{safe}");
+fn main() {
+    let lines = io_utils::read_stdin();
+    let solution = solve(lines);
+    println!("{solution}");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn solution_correct() {
+        let result = solve(io_utils::read_file("inputs/2.in"));
+        let solution = 402;
+        assert_eq!(result, solution);
+    }
 }

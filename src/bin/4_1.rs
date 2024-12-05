@@ -1,4 +1,4 @@
-use std::io;
+mod io_utils;
 
 fn find_horizontal(char_matrix: Vec<Vec<char>>) -> i32 {
     let mut found = 0;
@@ -87,17 +87,29 @@ fn find_diagonal_1st_quadrant(char_matrix: Vec<Vec<char>>) -> i32 {
     find_diagonal_2nd_quadrant(reverse_rows(char_matrix))
 }
 
-fn main() {
-    let char_matrix: Vec<Vec<char>> = io::stdin()
-        .lines()
-        .filter_map(|l| l.ok())
-        .map(|s| s.chars().collect())
-        .collect();
+fn solve(lines: Vec<String>) -> i32 {
+    let char_matrix: Vec<Vec<char>> = lines.iter().map(|s| s.chars().collect()).collect();
 
-    let xmases = find_horizontal(char_matrix.clone())
+    find_horizontal(char_matrix.clone())
         + find_vertical(char_matrix.clone())
         + find_diagonal_1st_quadrant(char_matrix.clone())
-        + find_diagonal_2nd_quadrant(char_matrix.clone());
+        + find_diagonal_2nd_quadrant(char_matrix.clone())
+}
 
-    println!("{xmases}");
+fn main() {
+    let lines = io_utils::read_stdin();
+    let solution = solve(lines);
+    println!("{solution}");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn solution_correct() {
+        let result = solve(io_utils::read_file("inputs/4.in"));
+        let solution = 2468;
+        assert_eq!(result, solution);
+    }
 }
