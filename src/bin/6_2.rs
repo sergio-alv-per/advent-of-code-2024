@@ -27,6 +27,11 @@ struct LabMap {
     guard_direction: Direction,
 }
 
+enum LabMapResult {
+    Loops,
+    Exits(Option<Vec<Position>>),
+}
+
 fn input_to_map(lines: &Vec<String>) -> LabMap {
     let mut guard_position = Position(0, 0);
     let lab_map: Vec<Vec<Square>> = lines
@@ -57,7 +62,7 @@ fn input_to_map(lines: &Vec<String>) -> LabMap {
     }
 }
 
-fn falls_into_loop(mut lab_map: LabMap) -> bool {
+fn falls_into_loop(mut lab_map: LabMap, keep_visited: bool) -> LabMapResult {
     loop {
         let Position(i, j) = lab_map.guard_position;
         let dir = lab_map.guard_direction;
@@ -66,7 +71,7 @@ fn falls_into_loop(mut lab_map: LabMap) -> bool {
             Square::Visited(dirs) => {
                 if dirs[dir as usize] {
                     // Already visited this square in this direction, found loop!
-                    return true;
+                    return LabMapResult::Loops;
                 } else {
                     let mut new_dirs = [false, false, false, false];
                     new_dirs[lab_map.guard_direction as usize] = true;
@@ -117,28 +122,48 @@ fn falls_into_loop(mut lab_map: LabMap) -> bool {
         }
     }
 
-    false
+    if !keep_visited {
+        LabMapResult::Exits(None)
+    } else {
+        let visited_positions: Vec<Position> = lab_map
+            .map
+            .iter()
+            .enumerate()
+            .map(|(i, row)| {
+                row.iter()
+                    .enumerate()
+                    .filter_map(|(j, sq)| match sq {
+                        Square::Visited(_) => Some(Position(i, j)),
+                        _ => None,
+                    })
+                    .collect::<Vec<Position>>()
+            })
+            .collect::<Vec<Vec<Position>>>()
+            .concat();
+
+        LabMapResult::Exits(Some(visited_positions))
+    }
 }
 
 fn solve(lines: Vec<String>) -> i32 {
     let lab_map = input_to_map(&lines);
     let mut loops = 0;
 
-    // Optimization: avoid iterating over every square, take into account
-    // only those that were visited in an initial pass
-    for i in 0..lab_map.rows {
-        for j in 0..lab_map.cols {
-            println!("{i}, {j} - {}, {}", lab_map.rows, lab_map.cols);
-            if Position(i, j) != lab_map.guard_position && lab_map.map[i][j] == Square::Free {
-                let mut lm2 = lab_map.clone();
-                lm2.map[i][j] = Square::Obstacle;
-                if falls_into_loop(lm2) {
-                    loops += 1;
-                }
+    let visited_positions = match falls_into_loop(lab_map.clone(), true) {
+        LabMapResult::Exits(vs) => vs.unwrap(),
+        _ => panic!("Loop on initial position."),
+    };
+
+    for Position(i, j) in visited_positions {
+        if Position(i, j) != lab_map.guard_position {
+            let mut lm2 = lab_map.clone();
+            lm2.map[i][j] = Square::Obstacle;
+            match falls_into_loop(lm2, false) {
+                LabMapResult::Loops => loops += 1,
+                _ => {}
             }
         }
     }
-
     loops
 }
 
