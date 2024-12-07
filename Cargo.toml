@@ -3,5 +3,13 @@ name = "advent-of-code-2024"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "io_utils"
+test = false
+
+[[bin]]
+name = "template"
+test = false
+
 [dependencies]
 regex = "1.11.1"
