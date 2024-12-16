@@ -1,19 +1,18 @@
-use good_lp::{constraint, default_solver, variables, Solution, SolverModel};
 use regex::Regex;
 
 mod io_utils;
 
 #[derive(Debug)]
 struct ClawProblem {
-    dxa: i32,
-    dxb: i32,
-    dya: i32,
-    dyb: i32,
-    x: i32,
-    y: i32,
+    dxa: i128,
+    dxb: i128,
+    dya: i128,
+    dyb: i128,
+    x: i128,
+    y: i128,
 }
 
-fn captures_1_2(haystack: &String, pattern: &Regex) -> (i32, i32) {
+fn captures_1_2(haystack: &String, pattern: &Regex) -> (i128, i128) {
     let captures = pattern.captures(haystack).unwrap();
 
     (
@@ -48,25 +47,51 @@ fn lines_to_claw_problems(lines: &Vec<String>) -> Vec<ClawProblem> {
     problems
 }
 
-fn solve_problem(problem: &ClawProblem) -> Option<i32> {
-    variables! {
-        vars:
-            0 <= a (integer) <= 100;
-            0 <= b (integer) <= 100;
-    }
-
-    let solution = vars
-        .minimise(3 * a + b)
-        .using(default_solver)
-        .with(constraint!(a * problem.dxa + b * problem.dxb == problem.x))
-        .with(constraint!(a * problem.dya + b * problem.dyb == problem.y))
-        .solve()
-        .ok()?;
-
-    Some(solution.eval(3 * a + b).round() as i32)
+fn determinant(matrix: &[[i128; 2]; 2]) -> i128 {
+    matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
 }
 
-fn solve(lines: Vec<String>) -> i32 {
+fn inverse(matrix: &[[i128; 2]; 2]) -> Option<[[f64; 2]; 2]> {
+    let det = determinant(matrix);
+    if det == 0 {
+        None
+    } else {
+        let det = det as f64;
+        Some([
+            [matrix[1][1] as f64 / det, -matrix[0][1] as f64 / det],
+            [-matrix[1][0] as f64 / det, matrix[0][0] as f64 / det],
+        ])
+    }
+}
+
+fn solve_problem(problem: &ClawProblem) -> Option<i128> {
+    let problem_matrix = [[problem.dxa, problem.dxb], [problem.dya, problem.dyb]];
+
+    match inverse(&problem_matrix) {
+        None => {
+            // Colinear vectors, one of the dimensions is irrelevant
+            print!("Colinear!");
+            None
+        }
+        Some(inverse_matrix) => {
+            // Non colinear
+            let a = inverse_matrix[0][0] * (problem.x as f64)
+                + inverse_matrix[0][1] * (problem.y as f64);
+            let b = inverse_matrix[1][0] * (problem.x as f64)
+                + inverse_matrix[1][1] * (problem.y as f64);
+
+            if a.round() as i128 * problem.dxa + b.round() as i128 * problem.dxb == problem.x
+                && a.round() as i128 * problem.dya + b.round() as i128 * problem.dyb == problem.y
+            {
+                Some(3 * a.round() as i128 + b.round() as i128)
+            } else {
+                None
+            }
+        }
+    }
+}
+
+fn solve(lines: Vec<String>) -> i128 {
     let problems = lines_to_claw_problems(&lines);
 
     problems.iter().filter_map(solve_problem).sum()
