@@ -31,29 +31,6 @@ fn line_to_robot(line: &String, pattern: &Regex) -> Robot {
     }
 }
 
-fn print_positions(positions: &Vec<(i32, i32)>) {
-    let rows = 103;
-    let columns = 101;
-
-    let mut frequencies: HashMap<(i32, i32), i32> = HashMap::new();
-    for &p in positions {
-        *frequencies.entry(p).or_insert(0) += 1;
-    }
-
-    for i in 0..rows {
-        for j in 0..columns {
-            let representation = match frequencies.get(&(i, j)) {
-                Some(k @ 1..10) => &k.to_string(),
-                Some(10..) => "X",
-                _ => ".",
-            };
-
-            print!("{representation}");
-        }
-        println!("");
-    }
-}
-
 fn all_unique(vec: &Vec<(i32, i32)>) -> bool {
     let mut frequencies: HashMap<(i32, i32), i32> = HashMap::new();
     for &p in vec {
@@ -71,7 +48,6 @@ fn solve(lines: Vec<String>) -> i32 {
         let positions: Vec<(i32, i32)> = robots.iter().map(|r| position_at_second(r, i)).collect();
 
         if all_unique(&positions) {
-            // print_positions(&positions);
             return i;
         }
     }
